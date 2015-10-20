@@ -36,7 +36,9 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 
-		ResourcesMap: map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"triton_key": resourceKey(),
+		},
 
 		ConfigureFunc: providerConfigure,
 	}
