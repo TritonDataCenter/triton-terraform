@@ -1,0 +1,25 @@
+---
+box: golang:1.5.1
+
+build:
+  steps:
+    - setup-go-workspace:
+        package-dir: github.com/joyent/triton-terraform
+
+    - wercker/golint
+
+    - script:
+        name: go get
+        code: |
+          go get -v -t ./...
+
+    - script:
+        name: go build
+        code: |
+          env GOPATH=$GOPATH:$WERCKER_CACHE_DIR/go go build ./...
+
+    - script:
+        name: go test
+        code: |
+          cd $WERCKER_SOURCE_DIR
+          env SOURCE_DIR=$WERCKER_SOURCE_DIR/ GOPATH=$GOPATH:$WERCKER_CACHE_DIR/go go test ./...
