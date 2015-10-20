@@ -6,8 +6,6 @@ import (
 	"github.com/joyent/gosign/auth"
 	"io/ioutil"
 	"os"
-	"os/user"
-	"strings"
 )
 
 // Config manages state within the provider
@@ -32,27 +30,12 @@ func (c *Config) coalesce(keys ...string) string {
 	return ""
 }
 
-// ExpandPath expands a tilde at the beginning of a path to the current user's
-// home directory
-func (c *Config) ExpandPath(path string) (string, error) {
-	if path[:2] != "~/" {
-		return path, nil
-	}
-
-	usr, err := user.Current()
-	if err != nil {
-		return path, err
-	}
-
-	return strings.Replace(path, "~", usr.HomeDir, 1), nil
-}
-
 func (c *Config) init() error {
 	c.Account = c.coalesce(c.Account, os.Getenv("SDC_ACCOUNT"))
 	c.KeyID = c.coalesce(c.KeyID, os.Getenv("SDC_KEY_ID"))
 	c.URL = c.coalesce(c.URL, os.Getenv("SDC_URL"), "https://us-west-1.api.joyentcloud.com")
 
-	key, err := c.ExpandPath(c.coalesce(c.Key, os.Getenv("SDC_KEY"), "~/.ssh/id_rsa"))
+	key, err := ExpandUser(c.coalesce(c.Key, os.Getenv("SDC_KEY"), "~/.ssh/id_rsa"))
 	if err != nil {
 		return err
 	}

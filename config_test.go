@@ -4,7 +4,6 @@ import (
 	"github.com/joyent/triton-terraform/helpers"
 	"github.com/stretchr/testify/assert"
 	"os"
-	"os/user"
 	"testing"
 )
 
@@ -33,25 +32,6 @@ func TestCoalesce(t *testing.T) {
 		config.coalesce(""),
 		"",
 	)
-}
-
-func TestExpandPath(t *testing.T) {
-	t.Parallel()
-
-	config := new(Config)
-
-	usr, err := user.Current()
-	assert.Nil(t, err)
-
-	// expansion
-	expanded, err := config.ExpandPath("~/test")
-	assert.Nil(t, err)
-	assert.Equal(t, expanded, usr.HomeDir+"/test")
-
-	// no expansion
-	expanded, err = config.ExpandPath("test")
-	assert.Nil(t, err)
-	assert.Equal(t, expanded, "test")
 }
 
 func TestInitNothing(t *testing.T) {
