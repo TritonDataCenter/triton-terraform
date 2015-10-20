@@ -32,7 +32,9 @@ func (c *Config) coalesce(keys ...string) string {
 	return ""
 }
 
-func (c *Config) expandPath(path string) (string, error) {
+// ExpandPath expands a tilde at the beginning of a path to the current user's
+// home directory
+func (c *Config) ExpandPath(path string) (string, error) {
 	if path[:2] != "~/" {
 		return path, nil
 	}
@@ -50,7 +52,7 @@ func (c *Config) init() error {
 	c.KeyID = c.coalesce(c.KeyID, os.Getenv("SDC_KEY_ID"))
 	c.URL = c.coalesce(c.URL, os.Getenv("SDC_URL"), "https://us-west-1.api.joyentcloud.com")
 
-	key, err := c.expandPath(c.coalesce(c.Key, os.Getenv("SDC_KEY"), "~/.ssh/id_rsa"))
+	key, err := c.ExpandPath(c.coalesce(c.Key, os.Getenv("SDC_KEY"), "~/.ssh/id_rsa"))
 	if err != nil {
 		return err
 	}

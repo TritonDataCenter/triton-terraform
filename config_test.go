@@ -44,12 +44,12 @@ func TestExpandPath(t *testing.T) {
 	assert.Nil(t, err)
 
 	// expansion
-	expanded, err := config.expandPath("~/test")
+	expanded, err := config.ExpandPath("~/test")
 	assert.Nil(t, err)
 	assert.Equal(t, expanded, usr.HomeDir+"/test")
 
 	// no expansion
-	expanded, err = config.expandPath("test")
+	expanded, err = config.ExpandPath("test")
 	assert.Nil(t, err)
 	assert.Equal(t, expanded, "test")
 }
