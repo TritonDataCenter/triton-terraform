@@ -17,9 +17,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: coalesceToDefault(os.Getenv("SDC_ACCOUNT")),
 			},
 			"key": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: coalesceToDefault(os.Getenv("SDC_KEY")),
+				Type:     schema.TypeString,
+				Optional: true,
+				DefaultFunc: coalesceToDefault(
+					os.Getenv("SDC_KEY"),
+					"~/.ssh/id_rsa",
+				),
 			},
 			"key_id": &schema.Schema{
 				Type:        schema.TypeString,
