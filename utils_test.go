@@ -22,3 +22,22 @@ func TestExpandUser(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expanded, "test")
 }
+
+func TestCoalesceToDefault(t *testing.T) {
+	t.Parallel()
+
+	// first
+	result, err := coalesceToDefault("test", "")()
+	assert.Nil(t, err)
+	assert.Equal(t, result, "test")
+
+	// second
+	result, err = coalesceToDefault("", "test")()
+	assert.Nil(t, err)
+	assert.Equal(t, result, "test")
+
+	// none
+	result, err = coalesceToDefault()()
+	assert.Equal(t, err, ErrNoDefault)
+	assert.Equal(t, result, "")
+}
