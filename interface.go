@@ -10,6 +10,7 @@ import (
 // methods used by schema.ResourceData onto this. If wrapCallback starts giving
 // compile errors, you'll know you've added something incorrectly.
 type ResourceData interface {
+	Id() string
 	SetId(string)
 	Get(string) interface{}
 	Set(string, interface{}) error
