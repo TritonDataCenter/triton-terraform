@@ -140,6 +140,27 @@ func resourceMachine() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"metadata": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Removed:  "Please use root attributes instead of metadata",
+				Elem: &schema.Resource{
+					Schema: func() map[string]*schema.Schema {
+						m := map[string]*schema.Schema{}
+
+						for schemaName, apiName := range resourceMachineMetadataKeys {
+							m[apiName] = &schema.Schema{
+								Description: "deprecated",
+								Optional:    true,
+								Type:        schema.TypeString,
+								Removed:     fmt.Sprintf("Please use %s instead of metadata.%s", schemaName, apiName),
+							}
+						}
+
+						return m
+					}(),
+				},
+			},
 		},
 	}
 }
