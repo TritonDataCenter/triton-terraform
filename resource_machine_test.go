@@ -62,7 +62,7 @@ func (s *ResourceMachineSuite) CreateMachine() *cloudapi.Machine {
 	return machine
 }
 
-func (s *ResourceMachineSuite) TestMachineCreateValid() {
+func (s *ResourceMachineSuite) TestCreateValid() {
 	err := resourceMachineCreate(s.mock, s.config)
 	s.Assert().Nil(err)
 
@@ -82,13 +82,13 @@ func (s *ResourceMachineSuite) TestMachineCreateValid() {
 	// s.Assert().Equal(machine.Tags, s.mock.Get("tags"))
 }
 
-func (s *ResourceMachineSuite) TestMachineCreateInvalid() {
+func (s *ResourceMachineSuite) TestCreateInvalid() {
 	s.mock.Set("package", "blah")
 	err := resourceMachineCreate(s.mock, s.config)
 	s.Assert().NotNil(err)
 }
 
-func (s *ResourceMachineSuite) TestMachineRead() {
+func (s *ResourceMachineSuite) TestRead() {
 	machine := s.CreateMachine()
 
 	s.mock.SetId(machine.Id)
@@ -104,7 +104,7 @@ func (s *ResourceMachineSuite) TestMachineRead() {
 	s.Assert().Equal(s.mock.Get("image"), machine.Image)
 }
 
-func (s *ResourceMachineSuite) TestMachineUpdateName() {
+func (s *ResourceMachineSuite) TestUpdateName() {
 	machine := s.CreateMachine()
 
 	s.mock.SetId(machine.Id)
@@ -119,7 +119,7 @@ func (s *ResourceMachineSuite) TestMachineUpdateName() {
 	s.Assert().Equal(machine.Name, newName)
 }
 
-func (s *ResourceMachineSuite) TestMachineUpdateTags() {
+func (s *ResourceMachineSuite) TestUpdateTags() {
 	machine := s.CreateMachine()
 
 	s.mock.SetId(machine.Id)
@@ -137,7 +137,7 @@ func (s *ResourceMachineSuite) TestMachineUpdateTags() {
 	s.Assert().NotEqual(machine.Tags, newTags)
 }
 
-func (s *ResourceMachineSuite) TestMachineUpdateTagsEmpty() {
+func (s *ResourceMachineSuite) TestUpdateTagsEmpty() {
 	// TODO: the AddMachineTags call isn't implemented in the localservices
 	// API so this test always fails. It's currently set to succeed if it fails,
 	// which is obviously not the best test of the actual functionality.
@@ -157,7 +157,22 @@ func (s *ResourceMachineSuite) TestMachineUpdateTagsEmpty() {
 	// s.Assert().NotEqual(machine.Tags, newTags)
 }
 
-func (s *ResourceMachineSuite) TestMachineDelete() {
+func (s *ResourceMachineSuite) TestUpdatePackage() {
+	machine := s.CreateMachine()
+
+	s.mock.SetId(machine.Id)
+	newPackage := "11223344-1212-abab-3434-aabbccddeeff" // small
+	s.mock.Change("package", newPackage)
+
+	err := resourceMachineUpdate(s.mock, s.config)
+	s.Assert().Nil(err)
+
+	machine, err = s.api.GetMachine(machine.Id)
+	s.Assert().Nil(err)
+	s.Assert().Equal(machine.Package, newPackage)
+}
+
+func (s *ResourceMachineSuite) TestDelete() {
 	machine := s.CreateMachine()
 	s.mock.SetId(machine.Id)
 

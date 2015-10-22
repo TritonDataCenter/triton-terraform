@@ -89,10 +89,9 @@ func resourceMachine() *schema.Resource {
 				Computed:    true,
 			},
 			"package": &schema.Schema{
-				Description: "name of the pakcage to use on provisioning",
+				Description: "name of the package to use on provisioning",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true, // TODO: remove when Update is added
 				// TODO: validate that the package is available
 			},
 			"image": &schema.Schema{
@@ -310,6 +309,26 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 		d.Set("tags", iNewTags)
 
 		d.SetPartial("tags")
+	}
+
+	if d.HasChange("package") {
+		if err := api.ResizeMachine(d.Id(), d.Get("package").(string)); err != nil {
+			return err
+		}
+
+		err := waitFor(
+			func() (bool, error) {
+				machine, err := api.GetMachine(d.Id())
+				return machine.Package == d.Get("package").(string) && machine.State == machineStateRunning, err
+			},
+			machineStateChangeCheckInterval,
+			machineStateChangeTimeout,
+		)
+		if err != nil {
+			return err
+		}
+
+		d.SetPartial("package")
 	}
 
 	d.Partial(false)
