@@ -15,10 +15,15 @@ func NewMockResourceData(id string, attrs map[string]interface{}) *MockResourceD
 }
 
 func (d *MockResourceData) Get(key string) interface{} {
-	return d.Attrs[key]
+	v, _ := d.GetOk(key)
+	return v
 }
 
 func (d *MockResourceData) GetOk(key string) (interface{}, bool) {
+	if key == "" {
+		return d.Attrs, true
+	}
+
 	v, ok := d.Attrs[key]
 	return v, ok
 }
