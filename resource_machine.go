@@ -15,6 +15,14 @@ var (
 
 	machineStateChangeTimeout       = 10 * time.Minute
 	machineStateChangeCheckInterval = 10 * time.Second
+
+	resourceMachineMetadataKeys = map[string]string{
+		// semantics: "schema_name": "metadata_name"
+		"root_authorized_keys": "root_authorized_keys",
+		"user_script":          "user-script",
+		"user_data":            "user-data",
+		"administrator_pw":     "administrator-pw",
+	}
 )
 
 func resourceMachine() *schema.Resource {
@@ -65,12 +73,6 @@ func resourceMachine() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"metadata": &schema.Schema{
-				Description: "machine metadata, e.g. authorized-keys",
-				Type:        schema.TypeMap,
-				Optional:    true,
-				ForceNew:    true, // TODO: remove when Update is added
-			},
 			"tags": &schema.Schema{
 				Description: "machine tags",
 				Type:        schema.TypeMap,
@@ -117,6 +119,28 @@ func resourceMachine() *schema.Resource {
 				// TODO: validate that a valid network is presented
 			},
 			// TODO: firewall_enabled
+
+			// computed resources from metadata
+			"root_authorized_keys": &schema.Schema{
+				Description: "authorized keys for the root user on this machine",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"user_script": &schema.Schema{
+				Description: "user script to run on boot (every boot on SmartMachines)",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"user_data": &schema.Schema{
+				Description: "copied to machine on boot",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"administrator_pw": &schema.Schema{
+				Description: "administrator's initial password (Windows only)",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -133,8 +157,10 @@ func resourceMachineCreate(d ResourceData, config *Config) error {
 	}
 
 	metadata := map[string]string{}
-	for k, v := range d.Get("metadata").(map[string]interface{}) {
-		metadata[k] = v.(string)
+	for schemaName, metadataKey := range resourceMachineMetadataKeys {
+		if v, ok := d.GetOk(schemaName); ok {
+			metadata[metadataKey] = v.(string)
+		}
 	}
 
 	tags := map[string]string{}
@@ -161,12 +187,11 @@ func resourceMachineCreate(d ResourceData, config *Config) error {
 	}
 
 	// refresh state after it provisions
-	machine, err = api.GetMachine(machine.Id)
+	d.SetId(machine.Id)
+	err = resourceMachineRead(d, config)
 	if err != nil {
 		return err
 	}
-
-	setFromMachine(d, machine)
 
 	return nil
 }
@@ -193,7 +218,26 @@ func resourceMachineRead(d ResourceData, config *Config) error {
 		return err
 	}
 
-	setFromMachine(d, machine)
+	d.SetId(machine.Id)
+	d.Set("name", machine.Name)
+	d.Set("type", machine.Type)
+	d.Set("state", machine.State)
+	d.Set("dataset", machine.Dataset)
+	d.Set("memory", machine.Memory)
+	d.Set("disk", machine.Disk)
+	d.Set("ips", machine.IPs)
+	d.Set("tags", machine.Tags)
+	d.Set("created", machine.Created)
+	d.Set("updated", machine.Updated)
+	d.Set("package", machine.Package)
+	d.Set("image", machine.Image)
+	d.Set("primaryip", machine.PrimaryIP)
+	d.Set("networks", machine.Networks)
+
+	// computed attributes from metadata
+	for schemaName, metadataKey := range resourceMachineMetadataKeys {
+		d.Set(schemaName, machine.Metadata[metadataKey])
+	}
 
 	return nil
 }
@@ -320,26 +364,6 @@ func waitForMachineState(api *cloudapi.Client, id, state string, timeout time.Du
 		machineStateChangeCheckInterval,
 		machineStateChangeTimeout,
 	)
-}
-
-// setFromMachine sets resource data from a machine. This includes the ID.
-func setFromMachine(d ResourceData, machine *cloudapi.Machine) {
-	d.SetId(machine.Id)
-	d.Set("name", machine.Name)
-	d.Set("type", machine.Type)
-	d.Set("state", machine.State)
-	d.Set("dataset", machine.Dataset)
-	d.Set("memory", machine.Memory)
-	d.Set("disk", machine.Disk)
-	d.Set("ips", machine.IPs)
-	d.Set("metadata", machine.Metadata)
-	d.Set("tags", machine.Tags)
-	d.Set("created", machine.Created)
-	d.Set("updated", machine.Updated)
-	d.Set("package", machine.Package)
-	d.Set("image", machine.Image)
-	d.Set("primaryip", machine.PrimaryIP)
-	d.Set("networks", machine.Networks)
 }
 
 func resourceMachineValidateName(value interface{}, name string) (warnings []string, errors []error) {

@@ -40,9 +40,6 @@ func (s *ResourceMachineSuite) SetupTest() {
 			"package":  "12345678-aaaa-bbbb-cccc-000000000000",            // Micro
 			"image":    "12345678-a1a1-b2b2-c3c3-098765432100",            // SmartOS Std
 			"networks": []interface{}{"123abc4d-0011-aabb-2233-ccdd4455"}, // Test-Joyent-Public
-			"metadata": map[string]interface{}{
-				"metadata.key": "value",
-			},
 			"tags": map[string]interface{}{
 				"hello": "world",
 			},
@@ -162,8 +159,7 @@ func (s *ResourceMachineSuite) TestMachineUpdateTagsEmpty() {
 
 func (s *ResourceMachineSuite) TestMachineDelete() {
 	machine := s.CreateMachine()
-
-	setFromMachine(s.mock, machine)
+	s.mock.SetId(machine.Id)
 
 	err := resourceMachineDelete(s.mock, s.config)
 	s.Assert().Nil(err)
