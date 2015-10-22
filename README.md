@@ -69,11 +69,11 @@ Notes:
 
 - you can use the package UUID instead of the name, but Terraform will think
   that you want to change it and recreate the resource every time if you do.
-- changing metadata is currently a little odd: if you don't specify exactly the
-  metadata that the remote API will generate, Terraform will think you want to
-  change the metadata every time you run `terraform plan`. To stop this, set the
-  metadata keys and values *exactly* as they will be generated (`terraform plan`
-  will show you what was generated, if you like.)
+- changing metadata is a little odd. In order to prevent Terraform from thinking
+  the metadata needs to be changed every time you run `terraform plan`, known
+  keys have been promoted to the top level. So, if you need to access the
+  `user-script` key, use `user_script` (just replace the dashes with
+  underscores, in general).
 - due to a bug in the SDC API for Go (which this tool is implemented against),
   you will have to run `terraform apply` twice to get your tags and metadata to
   apply.
