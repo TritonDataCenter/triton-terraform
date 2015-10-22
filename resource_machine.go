@@ -34,38 +34,38 @@ func resourceMachine() *schema.Resource {
 		Delete: wrapCallback(resourceMachineDelete),
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Description:  "friendly name",
 				Type:         schema.TypeString,
 				Computed:     true,
 				ValidateFunc: resourceMachineValidateName,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Description: "machine type (smartmachine or virtualmachine)",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"state": &schema.Schema{
+			"state": {
 				Description: "current state of the machine",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"dataset": &schema.Schema{
+			"dataset": {
 				Description: "dataset URN the machine was provisioned with",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"memory": &schema.Schema{
+			"memory": {
 				Description: "amount of memory the machine has (in Mb)",
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
-			"disk": &schema.Schema{
+			"disk": {
 				Description: "amount of disk the machine has (in Gb)",
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
-			"ips": &schema.Schema{
+			"ips": {
 				Description: "IP addresses the machine has",
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -73,40 +73,40 @@ func resourceMachine() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"tags": &schema.Schema{
+			"tags": {
 				Description: "machine tags",
 				Type:        schema.TypeMap,
 				Optional:    true,
 			},
-			"created": &schema.Schema{
+			"created": {
 				Description: "when the machine was created",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"updated": &schema.Schema{
+			"updated": {
 				Description: "when the machine was update",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"package": &schema.Schema{
+			"package": {
 				Description: "name of the package to use on provisioning",
 				Type:        schema.TypeString,
 				Required:    true,
 				// TODO: validate that the package is available
 			},
-			"image": &schema.Schema{
+			"image": {
 				Description: "image UUID",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true, // TODO: remove when Update is added
 				// TODO: validate that the UUID is valid
 			},
-			"primaryip": &schema.Schema{
+			"primaryip": {
 				Description: "the primary (public) IP address for the machine",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"networks": &schema.Schema{
+			"networks": {
 				Description: "desired network IDs",
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -120,22 +120,22 @@ func resourceMachine() *schema.Resource {
 			// TODO: firewall_enabled
 
 			// computed resources from metadata
-			"root_authorized_keys": &schema.Schema{
+			"root_authorized_keys": {
 				Description: "authorized keys for the root user on this machine",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"user_script": &schema.Schema{
+			"user_script": {
 				Description: "user script to run on boot (every boot on SmartMachines)",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"user_data": &schema.Schema{
+			"user_data": {
 				Description: "copied to machine on boot",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"administrator_pw": &schema.Schema{
+			"administrator_pw": {
 				Description: "administrator's initial password (Windows only)",
 				Type:        schema.TypeString,
 				Computed:    true,
