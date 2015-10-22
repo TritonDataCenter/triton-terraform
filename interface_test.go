@@ -18,6 +18,11 @@ func (d *MockResourceData) Get(key string) interface{} {
 	return d.Attrs[key]
 }
 
+func (d *MockResourceData) GetOk(key string) (interface{}, bool) {
+	v, ok := d.Attrs[key]
+	return v, ok
+}
+
 func (d *MockResourceData) Set(key string, value interface{}) error {
 	d.Attrs[key] = value
 	return nil

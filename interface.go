@@ -13,6 +13,7 @@ type ResourceData interface {
 	Id() string
 	SetId(string)
 	Get(string) interface{}
+	GetOk(string) (interface{}, bool)
 	Set(string, interface{}) error
 	Partial(bool)
 	SetPartial(string)
