@@ -26,6 +26,7 @@ func resourceMachine() *schema.Resource {
 		Create: wrapCallback(resourceMachineCreate),
 		Exists: wrapExistsCallback(resourceMachineExists),
 		Read:   wrapCallback(resourceMachineRead),
+		Update: wrapCallback(resourceMachineUpdate),
 		Delete: wrapCallback(resourceMachineDelete),
 
 		Schema: map[string]*schema.Schema{
@@ -33,7 +34,6 @@ func resourceMachine() *schema.Resource {
 				Description:  "friendly name",
 				Type:         schema.TypeString,
 				Optional:     true,
-				ForceNew:     true, // TODO: remove when Update is added
 				ValidateFunc: resourceMachineValidateName,
 			},
 			"type": &schema.Schema{
@@ -199,6 +199,27 @@ func resourceMachineRead(d ResourceData, config *Config) error {
 	}
 
 	setFromMachine(d, machine)
+
+	return nil
+}
+
+func resourceMachineUpdate(d ResourceData, config *Config) error {
+	api, err := config.Cloud()
+	if err != nil {
+		return err
+	}
+
+	d.Partial(true)
+
+	if d.HasChange("name") {
+		if err := api.RenameMachine(d.Id(), d.Get("name").(string)); err != nil {
+			return err
+		}
+
+		d.SetPartial("name")
+	}
+
+	d.Partial(false)
 
 	return nil
 }

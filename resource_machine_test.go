@@ -107,6 +107,21 @@ func (s *ResourceMachineSuite) TestMachineRead() {
 	s.Assert().Equal(s.mock.Get("image"), machine.Image)
 }
 
+func (s *ResourceMachineSuite) TestMachineUpdateName() {
+	machine := s.CreateMachine()
+
+	s.mock.SetId(machine.Id)
+	newName := "test-2"
+	s.mock.Change("name", newName)
+
+	err := resourceMachineUpdate(s.mock, s.config)
+	s.Assert().Nil(err)
+
+	machine, err = s.api.GetMachine(machine.Id)
+	s.Assert().Nil(err)
+	s.Assert().Equal(machine.Name, newName)
+}
+
 func (s *ResourceMachineSuite) TestMachineDelete() {
 	machine := s.CreateMachine()
 
