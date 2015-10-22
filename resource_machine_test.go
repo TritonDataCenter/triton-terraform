@@ -172,6 +172,27 @@ func (s *ResourceMachineSuite) TestUpdatePackage() {
 	s.Assert().Equal(machine.Package, newPackage)
 }
 
+func (s *ResourceMachineSuite) TestUpdateMetadatas() {
+	// TODO: the UpdateMachineMetadata call isn't implemented in the localservices
+	// API so this test always fails. It's currently set to succeed if it fails,
+	// which is obviously not the best test of the actual functionality.
+
+	machine := s.CreateMachine()
+	s.mock.SetId(machine.Id)
+
+	for schemaName, apiKey := range resourceMachineMetadataKeys {
+		newValue := "something else"
+		s.mock.Change(schemaName, newValue)
+
+		err := resourceMachineUpdate(s.mock, s.config)
+		s.Assert().NotNil(err, err.Error())
+
+		machine, err = s.api.GetMachine(machine.Id)
+		s.Assert().Nil(err)
+		s.Assert().NotEqual(machine.Metadata[apiKey], newValue)
+	}
+}
+
 func (s *ResourceMachineSuite) TestDelete() {
 	machine := s.CreateMachine()
 	s.mock.SetId(machine.Id)

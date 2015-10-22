@@ -340,6 +340,38 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 		d.SetPartial("package")
 	}
 
+	// metadata stuff
+	metadata := map[string]string{}
+	for schemaName, metadataKey := range resourceMachineMetadataKeys {
+		if d.HasChange(schemaName) {
+			metadata[metadataKey] = d.Get(schemaName).(string)
+		}
+	}
+	if len(metadata) > 0 {
+		_, err := api.UpdateMachineMetadata(d.Id(), metadata)
+		if err != nil {
+			return err
+		}
+
+		err = waitFor(
+			func() (bool, error) {
+				machine, err := api.GetMachine(d.Id())
+				return reflect.DeepEqual(machine.Metadata, metadata), err
+			},
+			machineStateChangeCheckInterval,
+			1*time.Minute,
+		)
+		if err != nil {
+			return err
+		}
+
+		for schemaName := range resourceMachineMetadataKeys {
+			if d.HasChange(schemaName) {
+				d.SetPartial(schemaName)
+			}
+		}
+	}
+
 	d.Partial(false)
 
 	err = resourceMachineRead(d, config)
