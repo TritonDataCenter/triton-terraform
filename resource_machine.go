@@ -342,6 +342,11 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 
 	d.Partial(false)
 
+	err = resourceMachineRead(d, config)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
