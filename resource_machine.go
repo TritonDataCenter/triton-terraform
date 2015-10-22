@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/joyent/gosdc/cloudapi"
@@ -10,10 +9,6 @@ import (
 )
 
 var (
-	// ErrMachineStateTimeout is returned when changing machine state results in a
-	// timeout
-	ErrMachineStateTimeout = errors.New("timed out waiting for machine state")
-
 	machineStateRunning = "running"
 	machineStateStopped = "stopped"
 
@@ -263,22 +258,14 @@ func readMachineState(api *cloudapi.Client, id string) (string, error) {
 // some seconds between each poll). If it doesn't reach the state within the
 // duration specified in `timeout`, it returns ErrMachineStateTimeout.
 func waitForMachineState(api *cloudapi.Client, id, state string, timeout time.Duration) error {
-	start := time.Now()
-
-	for time.Since(start) <= timeout {
-		currentState, err := readMachineState(api, id)
-		if err != nil {
-			return err
-		}
-
-		if currentState != state {
-			time.Sleep(machineStateChangeCheckInterval)
-		} else {
-			return nil
-		}
-	}
-
-	return ErrMachineStateTimeout
+	return waitFor(
+		func() (bool, error) {
+			currentState, err := readMachineState(api, id)
+			return currentState == state, err
+		},
+		machineStateChangeCheckInterval,
+		machineStateChangeTimeout,
+	)
 }
 
 // setFromMachine sets resource data from a machine. This includes the ID.
