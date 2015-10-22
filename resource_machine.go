@@ -211,6 +211,18 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 			return err
 		}
 
+		err := waitFor(
+			func() (bool, error) {
+				machine, err := api.GetMachine(d.Id())
+				return machine.Name == d.Get("name").(string), err
+			},
+			machineStateChangeCheckInterval,
+			1*time.Minute,
+		)
+		if err != nil {
+			return err
+		}
+
 		d.SetPartial("name")
 	}
 
