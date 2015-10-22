@@ -37,13 +37,13 @@ func (s *ResourceMachineSuite) SetupTest() {
 		s.initialID,
 		map[string]interface{}{
 			"name":     "test",
-			"package":  "12345678-aaaa-bbbb-cccc-000000000000",       // Micro
-			"image":    "12345678-a1a1-b2b2-c3c3-098765432100",       // SmartOS Std
-			"networks": []string{"123abc4d-0011-aabb-2233-ccdd4455"}, // Test-Joyent-Public
-			"metadata": map[string]string{
+			"package":  "12345678-aaaa-bbbb-cccc-000000000000",            // Micro
+			"image":    "12345678-a1a1-b2b2-c3c3-098765432100",            // SmartOS Std
+			"networks": []interface{}{"123abc4d-0011-aabb-2233-ccdd4455"}, // Test-Joyent-Public
+			"metadata": map[string]interface{}{
 				"metadata.key": "value",
 			},
-			"tags": map[string]string{
+			"tags": map[string]interface{}{
 				"tag": "???",
 			},
 		},

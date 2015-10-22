@@ -2,8 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/joyent/gosdc/cloudapi"
+	"regexp"
 	"time"
 )
 
@@ -15,7 +17,8 @@ var (
 	machineStateRunning = "running"
 	machineStateStopped = "stopped"
 
-	machineStateChangeTimeout = 60 * time.Second
+	machineStateChangeTimeout       = 10 * time.Minute
+	machineStateChangeCheckInterval = 10 * time.Second
 )
 
 func resourceMachine() *schema.Resource {
@@ -23,13 +26,70 @@ func resourceMachine() *schema.Resource {
 		Create: wrapCallback(resourceMachineCreate),
 		Exists: wrapExistsCallback(resourceMachineExists),
 		Read:   wrapCallback(resourceMachineRead),
+		Delete: wrapCallback(resourceMachineDelete),
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Description: "friendly name",
+				Description:  "friendly name",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true, // TODO: remove when Update is added
+				ValidateFunc: resourceMachineValidateName,
+			},
+			"type": &schema.Schema{
+				Description: "machine type (smartmachine or virtualmachine)",
 				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"state": &schema.Schema{
+				Description: "current state of the machine",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"dataset": &schema.Schema{
+				Description: "dataset URN the machine was provisioned with",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"memory": &schema.Schema{
+				Description: "amount of memory the machine has (in Mb)",
+				Type:        schema.TypeInt,
+				Computed:    true,
+			},
+			"disk": &schema.Schema{
+				Description: "amount of disk the machine has (in Gb)",
+				Type:        schema.TypeInt,
+				Computed:    true,
+			},
+			"ips": &schema.Schema{
+				Description: "IP addresses the machine has",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"metadata": &schema.Schema{
+				Description: "machine metadata, e.g. authorized-keys",
+				Type:        schema.TypeMap,
 				Optional:    true,
 				ForceNew:    true, // TODO: remove when Update is added
+			},
+			"tags": &schema.Schema{
+				Description: "machine tags",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				ForceNew:    true, // TODO: remove when Update is added
+			},
+			"created": &schema.Schema{
+				Description: "when the machine was created",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"updated": &schema.Schema{
+				Description: "when the machine was update",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"package": &schema.Schema{
 				Description: "name of the pakcage to use on provisioning",
@@ -45,26 +105,21 @@ func resourceMachine() *schema.Resource {
 				ForceNew:    true, // TODO: remove when Update is added
 				// TODO: validate that the UUID is valid
 			},
+			"primaryip": &schema.Schema{
+				Description: "the primary (public) IP address for the machine",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"networks": &schema.Schema{
 				Description: "desired network IDs",
 				Type:        schema.TypeList,
-				Elem:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true, // TODO: remove when Update is added
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 				// Default:     []string{"public", "private"},
 				// TODO: validate that a valid network is presented
-			},
-			"metadata": &schema.Schema{
-				Description: "an arbitrary set of metadata key/value pairs",
-				Type:        schema.TypeMap,
-				Optional:    true,
-				ForceNew:    true, // TODO: remove when Update is added
-			},
-			"tags": &schema.Schema{
-				Description: "an arbitrary set of tags",
-				Type:        schema.TypeMap,
-				Optional:    true,
-				ForceNew:    true, // TODO: remove when Update is added
 			},
 			// TODO: firewall_enabled
 		},
@@ -77,20 +132,41 @@ func resourceMachineCreate(d ResourceData, config *Config) error {
 		return err
 	}
 
+	var networks []string
+	for _, network := range d.Get("networks").([]interface{}) {
+		networks = append(networks, network.(string))
+	}
+
+	metadata := map[string]string{}
+	for k, v := range d.Get("metadata").(map[string]interface{}) {
+		metadata[k] = v.(string)
+	}
+
+	tags := map[string]string{}
+	for k, v := range d.Get("tags").(map[string]interface{}) {
+		tags[k] = v.(string)
+	}
+
 	machine, err := api.CreateMachine(cloudapi.CreateMachineOpts{
 		Name:            d.Get("name").(string),
 		Package:         d.Get("package").(string),
 		Image:           d.Get("image").(string),
-		Networks:        d.Get("networks").([]string),
-		Metadata:        d.Get("metadata").(map[string]string),
-		Tags:            d.Get("tags").(map[string]string),
+		Networks:        networks,
+		Metadata:        metadata,
+		Tags:            tags,
 		FirewallEnabled: true, // TODO: turn this into another schema field
 	})
 	if err != nil {
 		return err
 	}
 
-	err = waitForMachineState(api, machine.Id, machineStateRunning, 60*time.Second)
+	err = waitForMachineState(api, machine.Id, machineStateRunning, machineStateChangeTimeout)
+	if err != nil {
+		return err
+	}
+
+	// refresh state after it provisions
+	machine, err = api.GetMachine(machine.Id)
 	if err != nil {
 		return err
 	}
@@ -162,9 +238,9 @@ func readMachineState(api *cloudapi.Client, id string) (string, error) {
 	return machine.State, nil
 }
 
-// waitForMachineState waits for a machine to be in the desired state (waiting 5
-// seconds between each poll). If it doesn't reach the state within the duration
-// specified in `timeout`, it returns ErrMachineStateTimeout
+// waitForMachineState waits for a machine to be in the desired state (waiting
+// some seconds between each poll). If it doesn't reach the state within the
+// duration specified in `timeout`, it returns ErrMachineStateTimeout.
 func waitForMachineState(api *cloudapi.Client, id, state string, timeout time.Duration) error {
 	start := time.Now()
 
@@ -175,7 +251,7 @@ func waitForMachineState(api *cloudapi.Client, id, state string, timeout time.Du
 		}
 
 		if currentState != state {
-			time.Sleep(5 * time.Second)
+			time.Sleep(machineStateChangeCheckInterval)
 		} else {
 			return nil
 		}
@@ -202,4 +278,16 @@ func setFromMachine(d ResourceData, machine *cloudapi.Machine) {
 	d.Set("image", machine.Image)
 	d.Set("primaryip", machine.PrimaryIP)
 	d.Set("networks", machine.Networks)
+}
+
+func resourceMachineValidateName(value interface{}, name string) (warnings []string, errors []error) {
+	warnings = []string{}
+	errors = []error{}
+
+	r := regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9\_\.\-]*$`)
+	if !r.Match([]byte(value.(string))) {
+		errors = append(errors, fmt.Errorf(`"%s" is not a valid %s`, value.(string), name))
+	}
+
+	return warnings, errors
 }
