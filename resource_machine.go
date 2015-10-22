@@ -296,12 +296,10 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 			tags[k] = v.(string)
 		}
 
-		var newTags map[string]string
 		if len(tags) == 0 {
 			err = api.DeleteMachineTags(d.Id())
-			newTags = map[string]string{}
 		} else {
-			newTags, err = api.ReplaceMachineTags(d.Id(), tags)
+			_, err = api.ReplaceMachineTags(d.Id(), tags)
 		}
 		if err != nil {
 			return err
@@ -310,7 +308,7 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 		err = waitFor(
 			func() (bool, error) {
 				machine, err := api.GetMachine(d.Id())
-				return reflect.DeepEqual(machine.Tags, newTags), err
+				return reflect.DeepEqual(machine.Tags, tags), err
 			},
 			machineStateChangeCheckInterval,
 			1*time.Minute,
@@ -318,16 +316,6 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 		if err != nil {
 			return err
 		}
-
-		// this API endpoint returns the new tags. To avoid getting into an
-		// inconsistent state (if the state is changed remotely in response to the
-		// change here) we're going to copy the remote tags to our local tags before
-		// saying everything is OK.
-		iNewTags := map[string]interface{}{}
-		for k, v := range newTags {
-			iNewTags[k] = v
-		}
-		d.Set("tags", iNewTags)
 
 		d.SetPartial("tags")
 	}
