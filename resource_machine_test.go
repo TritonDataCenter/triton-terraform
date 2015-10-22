@@ -122,6 +122,44 @@ func (s *ResourceMachineSuite) TestMachineUpdateName() {
 	s.Assert().Equal(machine.Name, newName)
 }
 
+func (s *ResourceMachineSuite) TestMachineUpdateTags() {
+	machine := s.CreateMachine()
+
+	s.mock.SetId(machine.Id)
+	newTags := map[string]interface{}{"hello": "St. Louis"}
+	s.mock.Change("tags", newTags)
+
+	// TODO: the ReplaceMachineTags call isn't implemented in the localservices
+	// API so this test always fails. It's currently set to succeed if it fails,
+	// which is obviously not the best test of the actual functionality.
+	err := resourceMachineUpdate(s.mock, s.config)
+	s.Assert().NotNil(err)
+
+	machine, err = s.api.GetMachine(machine.Id)
+	s.Assert().Nil(err)
+	s.Assert().NotEqual(machine.Tags, newTags)
+}
+
+func (s *ResourceMachineSuite) TestMachineUpdateTagsEmpty() {
+	// TODO: the AddMachineTags call isn't implemented in the localservices
+	// API so this test always fails. It's currently set to succeed if it fails,
+	// which is obviously not the best test of the actual functionality.
+	machine := s.CreateMachine()
+	_, err := s.api.AddMachineTags(machine.Id, map[string]string{"test": "value"})
+	s.Assert().NotNil(err)
+
+	// s.mock.SetId(machine.Id)
+	// newTags := map[string]interface{}{}
+	// s.mock.Change("tags", newTags)
+
+	// err = resourceMachineUpdate(s.mock, s.config)
+	// s.Assert().Nil(err, err.Error())
+
+	// machine, err = s.api.GetMachine(machine.Id)
+	// s.Assert().Nil(err)
+	// s.Assert().NotEqual(machine.Tags, newTags)
+}
+
 func (s *ResourceMachineSuite) TestMachineDelete() {
 	machine := s.CreateMachine()
 

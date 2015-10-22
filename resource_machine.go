@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/joyent/gosdc/cloudapi"
+	"reflect"
 	"regexp"
 	"time"
 )
@@ -74,7 +75,6 @@ func resourceMachine() *schema.Resource {
 				Description: "machine tags",
 				Type:        schema.TypeMap,
 				Optional:    true,
-				ForceNew:    true, // TODO: remove when Update is added
 			},
 			"created": &schema.Schema{
 				Description: "when the machine was created",
@@ -224,6 +224,48 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 		}
 
 		d.SetPartial("name")
+	}
+
+	if d.HasChange("tags") {
+		tags := map[string]string{}
+		for k, v := range d.Get("tags").(map[string]interface{}) {
+			tags[k] = v.(string)
+		}
+
+		var newTags map[string]string
+		if len(tags) == 0 {
+			err = api.DeleteMachineTags(d.Id())
+			newTags = map[string]string{}
+		} else {
+			newTags, err = api.ReplaceMachineTags(d.Id(), tags)
+		}
+		if err != nil {
+			return err
+		}
+
+		err = waitFor(
+			func() (bool, error) {
+				machine, err := api.GetMachine(d.Id())
+				return reflect.DeepEqual(machine.Tags, newTags), err
+			},
+			machineStateChangeCheckInterval,
+			1*time.Minute,
+		)
+		if err != nil {
+			return err
+		}
+
+		// this API endpoint returns the new tags. To avoid getting into an
+		// inconsistent state (if the state is changed remotely in response to the
+		// change here) we're going to copy the remote tags to our local tags before
+		// saying everything is OK.
+		iNewTags := map[string]interface{}{}
+		for k, v := range newTags {
+			iNewTags[k] = v
+		}
+		d.Set("tags", iNewTags)
+
+		d.SetPartial("tags")
 	}
 
 	d.Partial(false)
