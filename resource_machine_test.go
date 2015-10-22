@@ -44,7 +44,7 @@ func (s *ResourceMachineSuite) SetupTest() {
 				"metadata.key": "value",
 			},
 			"tags": map[string]interface{}{
-				"tag": "???",
+				"hello": "world",
 			},
 		},
 	)
@@ -52,6 +52,17 @@ func (s *ResourceMachineSuite) SetupTest() {
 
 func (s *ResourceMachineSuite) TeardownTest() {
 	s.server.Stop()
+}
+
+func (s *ResourceMachineSuite) CreateMachine() *cloudapi.Machine {
+	machine, err := s.api.CreateMachine(cloudapi.CreateMachineOpts{
+		Name:    s.mock.Get("name").(string),
+		Package: s.mock.Get("package").(string),
+		Image:   s.mock.Get("image").(string),
+	})
+	s.Require().Nil(err)
+
+	return machine
 }
 
 func (s *ResourceMachineSuite) TestMachineCreateValid() {
@@ -70,7 +81,6 @@ func (s *ResourceMachineSuite) TestMachineCreateValid() {
 	s.Assert().Equal(machine.Package, s.mock.Get("package"))
 	s.Assert().Equal(machine.Image, s.mock.Get("image"))
 	// TODO: the following aren't reflected in the localservices API
-	// s.Assert().Equal(machine.Networks, s.mock.Get("networks"))
 	// s.Assert().Equal(machine.Metadata, s.mock.Get("metadata"))
 	// s.Assert().Equal(machine.Tags, s.mock.Get("tags"))
 }
@@ -82,19 +92,14 @@ func (s *ResourceMachineSuite) TestMachineCreateInvalid() {
 }
 
 func (s *ResourceMachineSuite) TestMachineRead() {
-	machine, err := s.api.CreateMachine(cloudapi.CreateMachineOpts{
-		Name:    s.mock.Get("name").(string),
-		Package: s.mock.Get("package").(string),
-		Image:   s.mock.Get("image").(string),
-	})
-	s.Require().Nil(err)
+	machine := s.CreateMachine()
 
 	s.mock.SetId(machine.Id)
 	s.mock.Set("name", "")
 	s.mock.Set("package", "")
 	s.mock.Set("image", "")
 
-	err = resourceMachineRead(s.mock, s.config)
+	err := resourceMachineRead(s.mock, s.config)
 	s.Assert().Nil(err)
 
 	s.Assert().Equal(s.mock.Get("name"), machine.Name)
@@ -103,16 +108,11 @@ func (s *ResourceMachineSuite) TestMachineRead() {
 }
 
 func (s *ResourceMachineSuite) TestMachineDelete() {
-	machine, err := s.api.CreateMachine(cloudapi.CreateMachineOpts{
-		Name:    s.mock.Get("name").(string),
-		Package: s.mock.Get("package").(string),
-		Image:   s.mock.Get("image").(string),
-	})
-	s.Require().Nil(err)
+	machine := s.CreateMachine()
 
 	setFromMachine(s.mock, machine)
 
-	err = resourceMachineDelete(s.mock, s.config)
+	err := resourceMachineDelete(s.mock, s.config)
 	s.Assert().Nil(err)
 
 	machine, err = s.api.GetMachine(machine.Id)
