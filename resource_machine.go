@@ -92,13 +92,12 @@ func resourceMachine() *schema.Resource {
 				Description: "name of the package to use on provisioning",
 				Type:        schema.TypeString,
 				Required:    true,
-				// TODO: validate that the package is available
 			},
 			"image": {
 				Description: "image UUID",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true, // TODO: remove when Update is added
+				ForceNew:    true,
 				// TODO: validate that the UUID is valid
 			},
 			"primaryip": {
@@ -110,12 +109,13 @@ func resourceMachine() *schema.Resource {
 				Description: "desired network IDs",
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    true, // TODO: remove when Update is added
+				// TODO: this really should ForceNew but the Network IDs don't seem to
+				// be returned by the API, meaning if we track them here TF will replace
+				// the resource on every run.
+				// ForceNew:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				// Default:     []string{"public", "private"},
-				// TODO: validate that a valid network is presented
 			},
 			// TODO: firewall_enabled
 
