@@ -123,21 +123,25 @@ func resourceMachine() *schema.Resource {
 			"root_authorized_keys": {
 				Description: "authorized keys for the root user on this machine",
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 			},
 			"user_script": {
 				Description: "user script to run on boot (every boot on SmartMachines)",
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 			},
 			"user_data": {
 				Description: "copied to machine on boot",
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 			},
 			"administrator_pw": {
 				Description: "administrator's initial password (Windows only)",
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 			},
 			"metadata": {
