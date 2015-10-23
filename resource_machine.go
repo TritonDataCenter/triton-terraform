@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/BrianHicks/gosdc/cloudapi"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/joyent/gosdc/cloudapi"
 	"reflect"
 	"regexp"
 	"time"

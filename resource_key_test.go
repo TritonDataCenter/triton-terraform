@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/joyent/gosdc/cloudapi"
+	"github.com/BrianHicks/gosdc/cloudapi"
 	"github.com/joyent/triton-terraform/helpers"
 	"github.com/stretchr/testify/suite"
 	"testing"

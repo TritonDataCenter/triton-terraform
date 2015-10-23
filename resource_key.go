@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/BrianHicks/gosdc/cloudapi"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/joyent/gosdc/cloudapi"
 )
 
 func resourceKey() *schema.Resource {
