@@ -124,7 +124,7 @@ Execute the script, substituting the correct values:
 bash sdc-docker-setup.sh <CLOUDAPI_URL> <ACCOUNT_USERNAME> ~/.ssh/<PRIVATE_KEY_FILE>
 ```
 
-If you are unsure about what values to use, you can find more information in the [Docker setup script instructions](https://github.com/joyent/sdc-docker/tree/master/docs/api#the-helper-script).
+If you are unsure about what values to use, you can find more information in the [Docker API access instructions](https://docs.joyent.com/public-cloud/api-access/docker).
 
 The script will verify that you have the appropriate access, generate client certificates, and output some envrionment variables that you can export to configure Docker client access.
 
