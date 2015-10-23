@@ -74,6 +74,3 @@ Notes:
   keys have been promoted to the top level. So, if you need to access the
   `user-script` key, use `user_script` (just replace the dashes with
   underscores, in general).
-- due to a bug in the SDC API for Go (which this tool is implemented against),
-  you will have to run `terraform apply` twice to get your tags and metadata to
-  apply.
