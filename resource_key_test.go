@@ -61,14 +61,12 @@ func (s *ResourceKeySuite) TestResourceKeyCreate() {
 
 func (s *ResourceKeySuite) TestResourceKeyExists() {
 	// it doesn't exist because we haven't created it yet, so let's check that
-	exists, _ := resourceKeyExists(s.mock, s.config)
-	// the test double doesn't work quite right (returns 500 instead of 404 for
-	// missing key), so we have to ignore this error
-	// assert.Nil(t, err)
+	exists, err := resourceKeyExists(s.mock, s.config)
+	s.Assert().Nil(err)
 	s.Assert().False(exists)
 
 	// create the key so we can test the positive case
-	_, err := s.api.CreateKey(cloudapi.CreateKeyOpts{
+	_, err = s.api.CreateKey(cloudapi.CreateKeyOpts{
 		Name: s.mock.Get("name").(string),
 		Key:  s.mock.Get("key").(string),
 	})

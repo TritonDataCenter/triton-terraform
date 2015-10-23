@@ -54,8 +54,18 @@ func resourceKeyExists(d ResourceData, config *Config) (bool, error) {
 		return false, err
 	}
 
-	key, err := cloud.GetKey(d.Get("name").(string))
-	return key != nil && err == nil, err
+	keys, err := cloud.ListKeys()
+	if err != nil {
+		return false, err
+	}
+
+	for _, key := range keys {
+		if key.Name == d.Id() {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func resourceKeyRead(d ResourceData, config *Config) error {
