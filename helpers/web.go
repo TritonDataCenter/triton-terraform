@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	local "github.com/BrianHicks/gosdc/localservices/cloudapi"
+	local "github.com/joyent/gosdc/localservices/cloudapi"
 	"github.com/joyent/gosign/auth"
 	"io/ioutil"
 	"net/http"

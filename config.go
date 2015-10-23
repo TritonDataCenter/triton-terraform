@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
-	"github.com/BrianHicks/gosdc/cloudapi"
 	"github.com/joyent/gocommon/client"
+	"github.com/joyent/gosdc/cloudapi"
 	"github.com/joyent/gosign/auth"
 	"io/ioutil"
 )
