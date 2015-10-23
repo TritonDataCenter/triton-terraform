@@ -4,6 +4,7 @@ import (
 	"github.com/joyent/gosdc/cloudapi"
 	"github.com/joyent/triton-terraform/helpers"
 	"github.com/stretchr/testify/suite"
+	"strings"
 	"testing"
 )
 
@@ -57,6 +58,22 @@ func (s *ResourceKeySuite) TestKeyCreate() {
 
 	// make sure we set the resource ID correctly
 	s.Assert().Equal(s.mock.ID, key.Name)
+}
+
+func (s *ResourceKeySuite) TestKeyCreateComment() {
+	s.mock.Set("name", "")
+	err := resourceKeyCreate(s.mock, s.config)
+	s.Assert().Nil(err)
+
+	s.Assert().Equal(s.mock.Get("name"), "test@localhost")
+}
+
+func (s *ResourceKeySuite) TestKeyCreateNoCommentOrName() {
+	s.mock.Set("name", "")
+	s.mock.Set("key", strings.Join(strings.SplitN(s.mock.Get("key").(string), " ", 3)[:2], " "))
+
+	err := resourceKeyCreate(s.mock, s.config)
+	s.Assert().Equal(err, ErrNoKeyComment)
 }
 
 func (s *ResourceKeySuite) TestKeyExists() {

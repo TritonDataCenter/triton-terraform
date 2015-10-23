@@ -1,8 +1,16 @@
 package main
 
 import (
+	"errors"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/joyent/gosdc/cloudapi"
+	"strings"
+)
+
+var (
+	// ErrNoKeyComment will be returned when the key name cannot be generated from
+	// the key comment and is not otherwise specified.
+	ErrNoKeyComment = errors.New("no key comment found to use as a name (and none specified)")
 )
 
 func resourceKey() *schema.Resource {
@@ -14,9 +22,10 @@ func resourceKey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Description: "name of this key",
+				Description: "name of this key (will be generated from the key comment, if not set and comment present)",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 			},
 			"key": &schema.Schema{
@@ -35,7 +44,16 @@ func resourceKeyCreate(d ResourceData, config *Config) error {
 		return err
 	}
 
-	newKey, err := cloud.CreateKey(cloudapi.CreateKeyOpts{
+	if d.Get("name").(string) == "" {
+		parts := strings.SplitN(d.Get("key").(string), " ", 3)
+		if len(parts) == 3 {
+			d.Set("name", parts[2])
+		} else {
+			return ErrNoKeyComment
+		}
+	}
+
+	_, err = cloud.CreateKey(cloudapi.CreateKeyOpts{
 		Name: d.Get("name").(string),
 		Key:  d.Get("key").(string),
 	})
@@ -43,7 +61,10 @@ func resourceKeyCreate(d ResourceData, config *Config) error {
 		return err
 	}
 
-	d.SetId(newKey.Name)
+	err = resourceKeyRead(d, config)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
