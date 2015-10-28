@@ -4,6 +4,7 @@ import (
 	"github.com/joyent/gosdc/cloudapi"
 	"github.com/joyent/triton-terraform/helpers"
 	"github.com/stretchr/testify/suite"
+	"strings"
 	"testing"
 )
 
@@ -44,7 +45,7 @@ func (s *ResourceKeySuite) TeardownTest() {
 	s.server.Stop()
 }
 
-func (s *ResourceKeySuite) TestResourceKeyCreate() {
+func (s *ResourceKeySuite) TestKeyCreate() {
 	err := resourceKeyCreate(s.mock, s.config)
 	s.Assert().Nil(err)
 
@@ -59,16 +60,30 @@ func (s *ResourceKeySuite) TestResourceKeyCreate() {
 	s.Assert().Equal(s.mock.ID, key.Name)
 }
 
-func (s *ResourceKeySuite) TestResourceKeyExists() {
+func (s *ResourceKeySuite) TestKeyCreateComment() {
+	s.mock.Set("name", "")
+	err := resourceKeyCreate(s.mock, s.config)
+	s.Assert().Nil(err)
+
+	s.Assert().Equal(s.mock.Get("name"), "test@localhost")
+}
+
+func (s *ResourceKeySuite) TestKeyCreateNoCommentOrName() {
+	s.mock.Set("name", "")
+	s.mock.Set("key", strings.Join(strings.SplitN(s.mock.Get("key").(string), " ", 3)[:2], " "))
+
+	err := resourceKeyCreate(s.mock, s.config)
+	s.Assert().Equal(err, ErrNoKeyComment)
+}
+
+func (s *ResourceKeySuite) TestKeyExists() {
 	// it doesn't exist because we haven't created it yet, so let's check that
-	exists, _ := resourceKeyExists(s.mock, s.config)
-	// the test double doesn't work quite right (returns 500 instead of 404 for
-	// missing key), so we have to ignore this error
-	// assert.Nil(t, err)
+	exists, err := resourceKeyExists(s.mock, s.config)
+	s.Assert().Nil(err)
 	s.Assert().False(exists)
 
 	// create the key so we can test the positive case
-	_, err := s.api.CreateKey(cloudapi.CreateKeyOpts{
+	_, err = s.api.CreateKey(cloudapi.CreateKeyOpts{
 		Name: s.mock.Get("name").(string),
 		Key:  s.mock.Get("key").(string),
 	})
@@ -80,7 +95,7 @@ func (s *ResourceKeySuite) TestResourceKeyExists() {
 	s.Assert().True(exists)
 }
 
-func (s *ResourceKeySuite) TestResourceKeyRead() {
+func (s *ResourceKeySuite) TestKeyRead() {
 	// we're using exists for this resource, so we don't have to test if the
 	// resource exists in read. Since that's true, we're just going to go straight
 	// to reading an existing key
@@ -96,7 +111,7 @@ func (s *ResourceKeySuite) TestResourceKeyRead() {
 	s.Assert().Equal(s.mock.ID, key.Name)
 }
 
-func (s *ResourceKeySuite) TestResourceKeyDelete() {
+func (s *ResourceKeySuite) TestKeyDelete() {
 	_, err := s.api.CreateKey(cloudapi.CreateKeyOpts{
 		Name: s.mock.Get("name").(string),
 		Key:  s.mock.Get("key").(string),
@@ -110,6 +125,6 @@ func (s *ResourceKeySuite) TestResourceKeyDelete() {
 	s.Assert().NotNil(err)
 }
 
-func TestResourceKeySuite(t *testing.T) {
+func TestKeySuite(t *testing.T) {
 	suite.Run(t, new(ResourceKeySuite))
 }

@@ -14,11 +14,15 @@ func (d *MockResourceData) Get(key string) interface{} {
 	return d.Attrs[key]
 }
 
-func (d *MockResourceData) SetId(id string) {
-	d.ID = id
-}
-
 func (d *MockResourceData) Set(key string, value interface{}) error {
 	d.Attrs[key] = value
 	return nil
+}
+
+func (d *MockResourceData) Id() string {
+	return d.ID
+}
+
+func (d *MockResourceData) SetId(id string) {
+	d.ID = id
 }
