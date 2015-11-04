@@ -13,7 +13,11 @@ type ResourceData interface {
 	Id() string
 	SetId(string)
 	Get(string) interface{}
+	GetOk(string) (interface{}, bool)
 	Set(string, interface{}) error
+	Partial(bool)
+	SetPartial(string)
+	HasChange(string) bool
 }
 
 func wrapCallback(inner func(ResourceData, *Config) error) func(*schema.ResourceData, interface{}) error {
