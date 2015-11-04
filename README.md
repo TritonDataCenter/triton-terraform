@@ -42,6 +42,8 @@ Creates and manages authentication keys in Triton. Do note that any change to
 this resource, once created, will result in the old resource being destroyed and
 recreated.
 
+`name` is optional if there is a comment set on the key.
+
 ```hcl
 resource "triton_key" "testkey" {
   name = "test key"
