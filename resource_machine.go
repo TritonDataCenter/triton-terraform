@@ -37,6 +37,7 @@ func resourceMachine() *schema.Resource {
 			"name": {
 				Description:  "friendly name",
 				Type:         schema.TypeString,
+				Optional:     true,
 				Computed:     true,
 				ValidateFunc: resourceMachineValidateName,
 			},
