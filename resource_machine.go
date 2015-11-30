@@ -120,6 +120,52 @@ func resourceMachine() *schema.Resource {
 			},
 			// TODO: firewall_enabled
 
+			"nic": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"network": {
+							Description: "UUID of network this NIC should attach to",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+
+						// compute attributes
+						"ip": {
+							Description: "NIC's IPv4 address",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"mac": {
+							Description: "NIC's MAC address",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"primary": {
+							Description: "Whether this is the VM's primary NIC",
+							Type:        schema.TypeBool,
+							Computed:    true,
+						},
+						"netmask": {
+							Description: "iPv4 netmask",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"gateway": {
+							Description: "iPv4 gateway",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"state": {
+							Description: "Descriptes the state of the NIC",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
+			},
+
 			// computed resources from metadata
 			"root_authorized_keys": {
 				Description: "authorized keys for the root user on this machine",
