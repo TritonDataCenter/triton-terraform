@@ -6,6 +6,9 @@
 **Table of Contents**
 
 - [triton-terraform](#triton-terraform)
+    - [Installing](#installing)
+        - [From a release](#from-a-release)
+        - [From source](#from-source)
     - [Provider](#provider)
     - [Resources](#resources)
         - [`triton_key`](#tritonkey)
@@ -13,10 +16,26 @@
 
 <!-- markdown-toc end -->
 
-## Provider
+## Installing
 
-You can set up the Triton provider for development by adding the following to
-your terraform RC after `go get`ing this repo:
+### From a release
+
+Download a release from the
+[releases page on Github](https://github.com/joyent/triton-terraform/releases),
+then add the binary to your provider config in `~/.terraformrc` like so:
+
+```hcl
+providers {
+  triton = "/path/where/you/expanded/triton-terraform"
+}
+```
+
+### From source
+
+If you want the latest version, install [go](https://golang.org/) and run `go
+get github.com/joyent/triton-terraform`. The plugin should be built and added to
+your Go binary folder. You'll then need to add the binary to your provider
+config in `~/.terraformrc` like so:
 
 ```hcl
 providers {
@@ -24,7 +43,9 @@ providers {
 }
 ```
 
-Then you'll need to set up the provider in a Terraform config file, like so:
+## Provider
+
+You'll need to set up the provider in a Terraform config file, like so:
 
 ```hcl
 provider "triton" {
@@ -71,8 +92,5 @@ Notes:
 
 - you can use the package UUID instead of the name, but Terraform will think
   that you want to change it and recreate the resource every time if you do.
-- changing metadata is a little odd. In order to prevent Terraform from thinking
-  the metadata needs to be changed every time you run `terraform plan`, known
-  keys have been promoted to the top level. So, if you need to access the
-  `user-script` key, use `user_script` (just replace the dashes with
-  underscores, in general).
+- to use metadata keys, change dashes to underscores, and use them as top-level
+  keys in the resource. For example, `user-script` becomes `user_script`.
