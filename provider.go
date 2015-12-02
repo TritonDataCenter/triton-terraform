@@ -40,8 +40,9 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"triton_key":     resourceKey(),
-			"triton_machine": resourceMachine(),
+			"triton_key":           resourceKey(),
+			"triton_machine":       resourceMachine(),
+			"triton_firewall_rule": resourceFirewallRule(),
 		},
 
 		ConfigureFunc: providerConfigure,
