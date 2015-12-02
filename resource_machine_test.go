@@ -36,10 +36,11 @@ func (s *ResourceMachineSuite) SetupTest() {
 	s.mock = NewMockResourceData(
 		s.initialID,
 		map[string]interface{}{
-			"name":     "test",
-			"package":  "12345678-aaaa-bbbb-cccc-000000000000",            // Micro
-			"image":    "12345678-a1a1-b2b2-c3c3-098765432100",            // SmartOS Std
-			"networks": []interface{}{"123abc4d-0011-aabb-2233-ccdd4455"}, // Test-Joyent-Public
+			"name":             "test",
+			"package":          "12345678-aaaa-bbbb-cccc-000000000000",            // Micro
+			"image":            "12345678-a1a1-b2b2-c3c3-098765432100",            // SmartOS Std
+			"networks":         []interface{}{"123abc4d-0011-aabb-2233-ccdd4455"}, // Test-Joyent-Public
+			"firewall_enabled": false,
 			"tags": map[string]interface{}{
 				"hello": "world",
 			},
@@ -82,6 +83,8 @@ func (s *ResourceMachineSuite) TestCreateValid() {
 	s.Assert().NotNil(machine.Networks)
 	s.Assert().Equal(machine.Networks, s.mock.Get("networks"))
 
+	s.Assert().False(s.mock.Get("firewall_enabled").(bool))
+
 	s.Assert().NotNil(machine.Tags)
 	s.Assert().Equal(machine.Tags, s.mock.Get("tags"))
 	s.Assert().NotNil(machine.Metadata)
@@ -101,6 +104,7 @@ func (s *ResourceMachineSuite) TestRead() {
 	s.mock.Set("name", "")
 	s.mock.Set("package", "")
 	s.mock.Set("image", "")
+	// TODO: s.mock.Set("firewall_enabled", "")
 
 	err := resourceMachineRead(s.mock, s.config)
 	s.Assert().Nil(err)
@@ -108,6 +112,7 @@ func (s *ResourceMachineSuite) TestRead() {
 	s.Assert().Equal(s.mock.Get("name"), machine.Name)
 	s.Assert().Equal(s.mock.Get("package"), machine.Package)
 	s.Assert().Equal(s.mock.Get("image"), machine.Image)
+	// TODO: s.Assert().False(s.mock.Get("firewall_enabled").(bool))
 }
 
 func (s *ResourceMachineSuite) TestUpdateName() {
@@ -197,6 +202,19 @@ func (s *ResourceMachineSuite) TestUpdateMetadatas() {
 		s.Assert().Nil(err)
 		s.Assert().NotEqual(machine.Metadata[apiKey], newValue)
 	}
+}
+
+func (s *ResourceMachineSuite) TestUpdateFirewall() {
+	machine := s.CreateMachine()
+	s.mock.SetId(machine.Id)
+
+	s.mock.Change("firewall_enabled", true)
+
+	err := resourceMachineUpdate(s.mock, s.config)
+	s.Assert().Nil(err)
+
+	// TODO: get machine to verify once FirewallEnabled is on the Machine struct
+	s.Assert().True(s.mock.Get("firewall_enabled").(bool))
 }
 
 func (s *ResourceMachineSuite) TestDelete() {

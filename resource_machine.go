@@ -118,7 +118,12 @@ func resourceMachine() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			// TODO: firewall_enabled
+			"firewall_enabled": {
+				Description: "enable firewall for this machine",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 
 			// computed resources from metadata
 			"root_authorized_keys": {
@@ -200,7 +205,7 @@ func resourceMachineCreate(d ResourceData, config *Config) error {
 		Networks:        networks,
 		Metadata:        metadata,
 		Tags:            tags,
-		FirewallEnabled: true, // TODO: turn this into another schema field
+		FirewallEnabled: d.Get("firewall_enabled").(bool),
 	})
 	if err != nil {
 		return err
@@ -258,6 +263,7 @@ func resourceMachineRead(d ResourceData, config *Config) error {
 	d.Set("image", machine.Image)
 	d.Set("primaryip", machine.PrimaryIP)
 	d.Set("networks", machine.Networks)
+	// d.Set("firewall_enabled", machine.FirewallEnabled) // but that field doesn't exist...
 
 	// computed attributes from metadata
 	for schemaName, metadataKey := range resourceMachineMetadataKeys {
@@ -343,6 +349,19 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 		}
 
 		d.SetPartial("package")
+	}
+
+	if d.HasChange("firewall_enabled") {
+		if d.Get("firewall_enabled").(bool) {
+			err = api.EnableFirewallMachine(d.Id())
+		} else {
+			err = api.DisableFirewallMachine(d.Id())
+		}
+		if err != nil {
+			return err
+		}
+
+		d.SetPartial("firewall_enabled")
 	}
 
 	// metadata stuff
