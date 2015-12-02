@@ -13,6 +13,7 @@
     - [Resources](#resources)
         - [`triton_key`](#tritonkey)
         - [`triton_machine`](#tritonmachine)
+        - [`triton_firewall_rule`](#tritonfirewallrule)
 
 <!-- markdown-toc end -->
 
@@ -85,6 +86,18 @@ resource "triton_machine" "testmachine" {
     test = "hello!"
   }
   networks = ["42325ea0-eb62-44c1-8eb6-0af3e2f83abc"]
+}
+```
+
+### `triton_firewall_rule`
+
+Creates and manages firewall rules in Triton. Note that the API currently
+defaults rules to being disabled, so this provider does too.
+
+```hcl
+resource "triton_firewall_rule" "testrule" {
+    rule = "FROM any TO tag www ALLOW tcp PORT 80"
+    enabled = true
 }
 ```
 
