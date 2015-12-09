@@ -3,7 +3,7 @@ variable "triton_url" {
   default = "https://us-sw-1.api.joyentcloud.com"
 }
 variable "triton_key_path" {
-  default = "path to your ssh key for triton"
+  default = "path to your ssh key for Triton"
 }
 variable "triton_key_id" {
   default = "Run 'ssh-keygen -l -E md5 -f <TRITON_KEY_PATH> | cut -d' ' -f2 | cut -d: -f2-'"
