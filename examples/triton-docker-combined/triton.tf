@@ -1,15 +1,15 @@
 # See http://www.joyent.com/blog/introducing-hashicorp-terraform-for-joyent-triton
 
 provider "triton" {
-  account = "${var.account}"
-  key = "${var.key_path}"
-  key_id = "${var.key_id}"
+  account = "${var.triton_account}"
+  key = "${var.triton_key_path}"
+  key_id = "${var.triton_key_id}"
   url = "${var.triton_url}"
 }
 
 provider "docker" {
   host = "${var.docker_host}"
-  cert_path = "${var.cert_path}"
+  cert_path = "${var.docker_cert_path}"
 }
 
 resource "docker_image" "nginx" {
