@@ -1,0 +1,7 @@
+account = "bobby.brown"
+triton_url = "https://us-sw-1.api.joyentcloud.com"
+key_path = "~/.ssh/joyent_id_rsa"
+key_id = "<KEY_FINGERPRINT>"
+
+cert_path = "/Users/<USER>/.sdc/docker/<SDC_ACCOUNT>"
+docker_host = "tcp://us-sw-1.docker.joyent.com:2376"
