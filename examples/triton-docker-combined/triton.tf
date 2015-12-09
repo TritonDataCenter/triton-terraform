@@ -24,6 +24,19 @@ resource "docker_container" "nginx" {
   must_run = true
 
   env = ["env=test", "role=test"]
+  restart = "always"
+  memory = 128
+
+  labels {
+    env = "test"
+    role = "docker"
+  }
+
+  log_driver = "json-file"
+  log_opts = {
+    max-size = "1m"
+    max-file = 2
+  }
 
   ports {
     internal = 80
