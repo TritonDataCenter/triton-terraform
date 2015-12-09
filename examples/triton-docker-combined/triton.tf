@@ -54,7 +54,7 @@ resource "triton_machine" "testmachine" {
 
 resource "triton_machine" "windowsmachine" {
   name = "win-test-terraform"
-  package = "333814c2-b4a7-481f-9f86-73bb4122c7a3"
+  package = "g3-standard-4-kvm"
   image = "66810176-4011-11e4-968f-938d7c9edfa2"
 
   count = 1
