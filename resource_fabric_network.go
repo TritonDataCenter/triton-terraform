@@ -50,10 +50,11 @@ func resourceFabricNetwork() *schema.Resource {
 			},
 
 			"subnet": {
-				Description: "CIDR formatted string describing network",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "CIDR formatted string describing network",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: resourceFabricValidateCIDR,
 			},
 
 			"start_ip": {

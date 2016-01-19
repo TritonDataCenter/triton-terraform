@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
 )
 
 func resourceFabricValidateVLAN(value interface{}, name string) (warnings []string, errors []error) {
@@ -25,5 +27,19 @@ func resourceFabricValidateIPv4(value interface{}, name string) (warnings []stri
 	if !valid || err != nil {
 		errors = append(errors, fmt.Errorf(`"%s" must be an IPv4 address`, name))
 	}
+	return
+}
+
+func resourceFabricValidateCIDR(value interface{}, name string) (warnings []string, errors []error) {
+	cidr := strings.SplitN(value.(string), "/", 2)
+	if cidr[1] == "" {
+		errors = append(errors, fmt.Errorf(`"%s" does not specifiy a subnet mask`))
+	} else if bits, err := strconv.ParseInt(cidr[1], 10, 16); err != nil || bits < 0 || bits > 32 {
+		errors = append(errors, fmt.Errorf(`"%s" has invalid subnet mask range "/%d"`, name, bits))
+	}
+
+	w, errs := resourceFabricValidateIPv4(cidr[0], name)
+	errors = append(errors, errs...)
+	warnings = append(warnings, w...)
 	return
 }
