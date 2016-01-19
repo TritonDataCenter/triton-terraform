@@ -1,9 +1,6 @@
 package main
 
 import (
-	"errors"
-	"regexp"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/joyent/gosdc/cloudapi"
 )
@@ -17,17 +14,19 @@ func resourceFabricNetwork() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"vlan_id": {
-				Description: "id of VLAN to create network on",
-				Type:        schema.TypeInt,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "id of VLAN to create network on",
+				Type:         schema.TypeInt,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: resourceFabricValidateVLAN,
 			},
 
 			"name": {
-				Description: "name of network",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "name of network",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: resourceFabricValidateName,
 			},
 
 			"public": {
@@ -58,25 +57,28 @@ func resourceFabricNetwork() *schema.Resource {
 			},
 
 			"start_ip": {
-				Description: "first assignable IP on network",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "first assignable IP on network",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: resourceFabricValidateIPv4,
 			},
 
 			"end_ip": {
-				Description: "last assignable IP on network",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "last assignable IP on network",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: resourceFabricValidateIPv4,
 			},
 
 			"gateway": {
-				Description: "address of gateway on network, nat zone is created here",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
+				Description:  "address of gateway on network, nat zone is created here",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				ValidateFunc: resourceFabricValidateIPv4,
 			},
 
 			"resolvers": {
@@ -87,7 +89,8 @@ func resourceFabricNetwork() *schema.Resource {
 				// the error from the api says object value found but array needed.
 				Required: true,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
+					Type:         schema.TypeString,
+					ValidateFunc: resourceFabricValidateIPv4,
 				},
 				ForceNew: true,
 			},
@@ -114,11 +117,6 @@ func resourceFabricNetworkCreate(d ResourceData, config *Config) error {
 	cloud, err := config.Cloud()
 	if err != nil {
 		return err
-	}
-
-	valid, err := regexp.MatchString("^[a-zA-Z][a-zA-Z0-9_\\\\./-]{1,255}$", d.Get("name").(string))
-	if !valid || err != nil {
-		return errors.New("\"name\" must be at most 255 characters and contain only letters, numbers, _, \\, /, -, and .")
 	}
 
 	var resolvers []string

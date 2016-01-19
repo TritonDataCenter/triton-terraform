@@ -17,16 +17,18 @@ func resourceFabricVLAN() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"vlan_id": {
-				Description: "VLAN Id between 0-4095",
-				Type:        schema.TypeInt,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "VLAN Id between 0-4095",
+				Type:         schema.TypeInt,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: resourceFabricValidateVLAN,
 			},
 
 			"name": {
-				Description: "Unique name of VLAN",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Unique name of VLAN",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: resourceFabricValidateName,
 			},
 
 			"description": {
