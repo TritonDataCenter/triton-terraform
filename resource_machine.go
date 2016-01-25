@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/joyent/gosdc/cloudapi"
 	"reflect"
 	"regexp"
 	"time"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/joyent/gosdc/cloudapi"
 )
 
 var (
@@ -263,7 +264,7 @@ func resourceMachineRead(d ResourceData, config *Config) error {
 	d.Set("image", machine.Image)
 	d.Set("primaryip", machine.PrimaryIP)
 	d.Set("networks", machine.Networks)
-	// d.Set("firewall_enabled", machine.FirewallEnabled) // but that field doesn't exist...
+	d.Set("firewall_enabled", machine.FirewallEnabled)
 
 	// computed attributes from metadata
 	for schemaName, metadataKey := range resourceMachineMetadataKeys {

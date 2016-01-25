@@ -1,11 +1,12 @@
 package helpers
 
 import (
+	"io/ioutil"
+	"net/http/httptest"
+
 	local "github.com/joyent/gosdc/localservices/cloudapi"
 	"github.com/joyent/gosign/auth"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
+	"github.com/julienschmidt/httprouter"
 )
 
 // Server creates a local test double for testing API responses
@@ -19,7 +20,7 @@ type Server struct {
 func NewServer() (*Server, error) {
 	s := new(Server)
 
-	mux := http.NewServeMux()
+	mux := httprouter.New()
 	s.Server = httptest.NewServer(mux)
 
 	key, err := ioutil.ReadFile(TestKeyFile)

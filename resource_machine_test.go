@@ -1,10 +1,11 @@
 package main
 
 import (
+	"testing"
+
 	"github.com/joyent/gosdc/cloudapi"
 	"github.com/joyent/triton-terraform/helpers"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type ResourceMachineSuite struct {
@@ -104,7 +105,7 @@ func (s *ResourceMachineSuite) TestRead() {
 	s.mock.Set("name", "")
 	s.mock.Set("package", "")
 	s.mock.Set("image", "")
-	// TODO: s.mock.Set("firewall_enabled", "")
+	s.mock.Set("firewall_enabled", "")
 
 	err := resourceMachineRead(s.mock, s.config)
 	s.Assert().Nil(err)
@@ -112,7 +113,7 @@ func (s *ResourceMachineSuite) TestRead() {
 	s.Assert().Equal(s.mock.Get("name"), machine.Name)
 	s.Assert().Equal(s.mock.Get("package"), machine.Package)
 	s.Assert().Equal(s.mock.Get("image"), machine.Image)
-	// TODO: s.Assert().False(s.mock.Get("firewall_enabled").(bool))
+	s.Assert().False(s.mock.Get("firewall_enabled").(bool))
 }
 
 func (s *ResourceMachineSuite) TestUpdateName() {
@@ -137,11 +138,8 @@ func (s *ResourceMachineSuite) TestUpdateTags() {
 	newTags := map[string]interface{}{"hello": "St. Louis"}
 	s.mock.Change("tags", newTags)
 
-	// TODO: the ReplaceMachineTags call isn't implemented in the localservices
-	// API so this test always fails. It's currently set to succeed if it fails,
-	// which is obviously not the best test of the actual functionality.
 	err := resourceMachineUpdate(s.mock, s.config)
-	s.Assert().NotNil(err)
+	s.Assert().Nil(err)
 
 	machine, err = s.api.GetMachine(machine.Id)
 	s.Assert().Nil(err)
@@ -149,23 +147,20 @@ func (s *ResourceMachineSuite) TestUpdateTags() {
 }
 
 func (s *ResourceMachineSuite) TestUpdateTagsEmpty() {
-	// TODO: the AddMachineTags call isn't implemented in the localservices
-	// API so this test always fails. It's currently set to succeed if it fails,
-	// which is obviously not the best test of the actual functionality.
 	machine := s.CreateMachine()
 	_, err := s.api.AddMachineTags(machine.Id, map[string]string{"test": "value"})
-	s.Assert().NotNil(err)
+	s.Assert().Nil(err)
 
-	// s.mock.SetId(machine.Id)
-	// newTags := map[string]interface{}{}
-	// s.mock.Change("tags", newTags)
+	s.mock.SetId(machine.Id)
+	newTags := map[string]interface{}{}
+	s.mock.Change("tags", newTags)
 
-	// err = resourceMachineUpdate(s.mock, s.config)
-	// s.Assert().Nil(err, err.Error())
+	err = resourceMachineUpdate(s.mock, s.config)
+	s.Assert().Nil(err, err.Error())
 
-	// machine, err = s.api.GetMachine(machine.Id)
-	// s.Assert().Nil(err)
-	// s.Assert().NotEqual(machine.Tags, newTags)
+	machine, err = s.api.GetMachine(machine.Id)
+	s.Assert().Nil(err)
+	s.Assert().NotEqual(machine.Tags, newTags)
 }
 
 func (s *ResourceMachineSuite) TestUpdatePackage() {
@@ -184,10 +179,6 @@ func (s *ResourceMachineSuite) TestUpdatePackage() {
 }
 
 func (s *ResourceMachineSuite) TestUpdateMetadatas() {
-	// TODO: the UpdateMachineMetadata call isn't implemented in the localservices
-	// API so this test always fails. It's currently set to succeed if it fails,
-	// which is obviously not the best test of the actual functionality.
-
 	machine := s.CreateMachine()
 	s.mock.SetId(machine.Id)
 
@@ -196,7 +187,7 @@ func (s *ResourceMachineSuite) TestUpdateMetadatas() {
 		s.mock.Change(schemaName, newValue)
 
 		err := resourceMachineUpdate(s.mock, s.config)
-		s.Assert().NotNil(err, err.Error())
+		s.Assert().Nil(err)
 
 		machine, err = s.api.GetMachine(machine.Id)
 		s.Assert().Nil(err)
@@ -213,7 +204,6 @@ func (s *ResourceMachineSuite) TestUpdateFirewall() {
 	err := resourceMachineUpdate(s.mock, s.config)
 	s.Assert().Nil(err)
 
-	// TODO: get machine to verify once FirewallEnabled is on the Machine struct
 	s.Assert().True(s.mock.Get("firewall_enabled").(bool))
 }
 
