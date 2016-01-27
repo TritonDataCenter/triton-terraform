@@ -1,26 +1,32 @@
 package helpers
 
 import (
-	local "github.com/joyent/gosdc/localservices/cloudapi"
-	"github.com/joyent/gosign/auth"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+
+	local "github.com/joyent/gosdc/localservices/cloudapi"
+	"github.com/joyent/gosign/auth"
+	"github.com/julienschmidt/httprouter"
 )
 
 // Server creates a local test double for testing API responses
 type Server struct {
-	Server *httptest.Server
-	API    *local.CloudAPI
-	Creds  *auth.Credentials
+	Server     *httptest.Server
+	oldHandler http.Handler
+	Mux        *httprouter.Router
+	API        *local.CloudAPI
+	Creds      *auth.Credentials
 }
 
 // NewServer returns a Server
 func NewServer() (*Server, error) {
 	s := new(Server)
 
-	mux := http.NewServeMux()
-	s.Server = httptest.NewServer(mux)
+	s.Server = httptest.NewServer(nil)
+	s.oldHandler = s.Server.Config.Handler
+	s.Mux = httprouter.New()
+	s.Server.Config.Handler = s.Mux
 
 	key, err := ioutil.ReadFile(TestKeyFile)
 	if err != nil {
@@ -36,7 +42,7 @@ func NewServer() (*Server, error) {
 	}
 
 	s.API = local.New(s.Server.URL, TestAccount)
-	s.API.SetupHTTP(mux)
+	s.API.SetupHTTP(s.Mux)
 
 	return s, nil
 }
@@ -48,5 +54,7 @@ func (s *Server) URL() string {
 
 // Stop stops the server for teardown
 func (s *Server) Stop() {
+	s.Mux = nil
+	s.Server.Config.Handler = s.oldHandler
 	s.Server.Close()
 }
