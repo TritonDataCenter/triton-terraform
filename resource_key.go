@@ -38,7 +38,7 @@ func resourceKey() *schema.Resource {
 	}
 }
 
-func resourceKeyCreate(d ResourceData, config *Config) error {
+func resourceKeyCreate(d *schema.ResourceData, config *Config) error {
 	cloud, err := config.Cloud()
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func resourceKeyCreate(d ResourceData, config *Config) error {
 	return nil
 }
 
-func resourceKeyExists(d ResourceData, config *Config) (bool, error) {
+func resourceKeyExists(d *schema.ResourceData, config *Config) (bool, error) {
 	cloud, err := config.Cloud()
 	if err != nil {
 		return false, err
@@ -89,7 +89,7 @@ func resourceKeyExists(d ResourceData, config *Config) (bool, error) {
 	return false, nil
 }
 
-func resourceKeyRead(d ResourceData, config *Config) error {
+func resourceKeyRead(d *schema.ResourceData, config *Config) error {
 	cloud, err := config.Cloud()
 	if err != nil {
 		return err
@@ -104,7 +104,7 @@ func resourceKeyRead(d ResourceData, config *Config) error {
 	return nil
 }
 
-func resourceKeyDelete(d ResourceData, config *Config) error {
+func resourceKeyDelete(d *schema.ResourceData, config *Config) error {
 	cloud, err := config.Cloud()
 	if err != nil {
 		return err
