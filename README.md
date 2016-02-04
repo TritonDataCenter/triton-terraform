@@ -14,6 +14,7 @@
         - [`triton_key`](#tritonkey)
         - [`triton_machine`](#tritonmachine)
         - [`triton_firewall_rule`](#tritonfirewallrule)
+    - [Using the Terraform Docker Provider](#using-the-terraform-docker-provider)
 
 <!-- markdown-toc end -->
 
