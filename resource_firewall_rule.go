@@ -35,7 +35,7 @@ func resourceFirewallRule() *schema.Resource {
 	}
 }
 
-func resourceFirewallRuleCreate(d ResourceData, config *Config) error {
+func resourceFirewallRuleCreate(d *schema.ResourceData, config *Config) error {
 	cloud, err := config.Cloud()
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func resourceFirewallRuleCreate(d ResourceData, config *Config) error {
 	return nil
 }
 
-func resourceFirewallRuleExists(d ResourceData, config *Config) (bool, error) {
+func resourceFirewallRuleExists(d *schema.ResourceData, config *Config) (bool, error) {
 	api, err := config.Cloud()
 	if err != nil {
 		return false, err
@@ -70,7 +70,7 @@ func resourceFirewallRuleExists(d ResourceData, config *Config) (bool, error) {
 	return rule != nil && err == nil, err
 }
 
-func resourceFirewallRuleRead(d ResourceData, config *Config) error {
+func resourceFirewallRuleRead(d *schema.ResourceData, config *Config) error {
 	cloud, err := config.Cloud()
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func resourceFirewallRuleRead(d ResourceData, config *Config) error {
 	return nil
 }
 
-func resourceFirewallRuleUpdate(d ResourceData, config *Config) error {
+func resourceFirewallRuleUpdate(d *schema.ResourceData, config *Config) error {
 	cloud, err := config.Cloud()
 	if err != nil {
 		return err
@@ -108,7 +108,7 @@ func resourceFirewallRuleUpdate(d ResourceData, config *Config) error {
 	return resourceFirewallRuleRead(d, config)
 }
 
-func resourceFirewallRuleDelete(d ResourceData, config *Config) error {
+func resourceFirewallRuleDelete(d *schema.ResourceData, config *Config) error {
 	cloud, err := config.Cloud()
 	if err != nil {
 		return err

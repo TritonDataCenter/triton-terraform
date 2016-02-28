@@ -175,7 +175,7 @@ func resourceMachine() *schema.Resource {
 	}
 }
 
-func resourceMachineCreate(d ResourceData, config *Config) error {
+func resourceMachineCreate(d *schema.ResourceData, config *Config) error {
 	api, err := config.Cloud()
 	if err != nil {
 		return err
@@ -226,7 +226,7 @@ func resourceMachineCreate(d ResourceData, config *Config) error {
 	return nil
 }
 
-func resourceMachineExists(d ResourceData, config *Config) (bool, error) {
+func resourceMachineExists(d *schema.ResourceData, config *Config) (bool, error) {
 	api, err := config.Cloud()
 	if err != nil {
 		return false, err
@@ -237,7 +237,7 @@ func resourceMachineExists(d ResourceData, config *Config) (bool, error) {
 	return machine != nil && err == nil, err
 }
 
-func resourceMachineRead(d ResourceData, config *Config) error {
+func resourceMachineRead(d *schema.ResourceData, config *Config) error {
 	api, err := config.Cloud()
 	if err != nil {
 		return err
@@ -270,10 +270,16 @@ func resourceMachineRead(d ResourceData, config *Config) error {
 		d.Set(schemaName, machine.Metadata[metadataKey])
 	}
 
+	// Initialize connection info to enable remote-exec
+	d.SetConnInfo(map[string]string{
+		"type": "ssh",
+		"host": machine.PrimaryIP,
+	})
+
 	return nil
 }
 
-func resourceMachineUpdate(d ResourceData, config *Config) error {
+func resourceMachineUpdate(d *schema.ResourceData, config *Config) error {
 	api, err := config.Cloud()
 	if err != nil {
 		return err
@@ -406,7 +412,7 @@ func resourceMachineUpdate(d ResourceData, config *Config) error {
 	return nil
 }
 
-func resourceMachineDelete(d ResourceData, config *Config) error {
+func resourceMachineDelete(d *schema.ResourceData, config *Config) error {
 	api, err := config.Cloud()
 	if err != nil {
 		return err

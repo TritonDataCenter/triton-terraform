@@ -20,13 +20,13 @@ type ResourceData interface {
 	HasChange(string) bool
 }
 
-func wrapCallback(inner func(ResourceData, *Config) error) func(*schema.ResourceData, interface{}) error {
+func wrapCallback(inner func(*schema.ResourceData, *Config) error) func(*schema.ResourceData, interface{}) error {
 	return func(d *schema.ResourceData, meta interface{}) error {
 		return inner(d, meta.(*Config))
 	}
 }
 
-func wrapExistsCallback(inner func(ResourceData, *Config) (bool, error)) func(*schema.ResourceData, interface{}) (bool, error) {
+func wrapExistsCallback(inner func(*schema.ResourceData, *Config) (bool, error)) func(*schema.ResourceData, interface{}) (bool, error) {
 	return func(d *schema.ResourceData, meta interface{}) (bool, error) {
 		return inner(d, meta.(*Config))
 	}
